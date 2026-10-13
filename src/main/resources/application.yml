@@ -1,0 +1,33 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/flashsale}
+    username: ${DB_USER:flashsale}
+    password: ${DB_PASSWORD:flashsale}
+    hikari:
+      maximum-pool-size: 12
+      connection-timeout: 3000
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 1s
+      connect-timeout: 1s
+sale:
+  mode: ${SALE_MODE:SQL}
+  stock: ${SALE_STOCK:100}
+  max-quantity: ${SALE_MAX_QUANTITY:5}
+  reservation-ttl: ${SALE_RESERVATION_TTL:30s}
+  admission-concurrency: ${SALE_ADMISSION_CONCURRENCY:8}
+  admission-per-second: ${SALE_ADMISSION_PER_SECOND:50}
+  sweep-ms: ${SALE_SWEEP_MS:1000}
+  callback-secret: ${SALE_CALLBACK_SECRET:local-demo-secret}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  health:
+    redis:
+      enabled: false
+server:
+  shutdown: graceful

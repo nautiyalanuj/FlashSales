@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: flashsale
+      POSTGRES_USER: flashsale
+      POSTGRES_PASSWORD: flashsale
+    ports: ["127.0.0.1:5432:5432"]
+    volumes: ["postgres-data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U flashsale -d flashsale"]
+      interval: 2s
+      timeout: 2s
+      retries: 20
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports: ["127.0.0.1:6379:6379"]
+    volumes: ["redis-data:/data"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 2s
+      retries: 20
+  app:
+    build: .
+    ports: ["127.0.0.1:8080:8080"]
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/flashsale
+      REDIS_HOST: redis
+      SALE_MODE: ${SALE_MODE:-SQL}
+      SALE_STOCK: ${SALE_STOCK:-100}
+      SALE_MAX_QUANTITY: ${SALE_MAX_QUANTITY:-5}
+      SALE_RESERVATION_TTL: ${SALE_RESERVATION_TTL:-30s}
+      SALE_ADMISSION_CONCURRENCY: ${SALE_ADMISSION_CONCURRENCY:-8}
+      SALE_ADMISSION_PER_SECOND: ${SALE_ADMISSION_PER_SECOND:-50}
+      SALE_CALLBACK_SECRET: ${SALE_CALLBACK_SECRET:-local-demo-secret}
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+volumes:
+  postgres-data:
+  redis-data:
